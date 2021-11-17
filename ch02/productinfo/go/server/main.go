@@ -10,8 +10,9 @@ import (
 	"log"
 	"net"
 
-	"github.com/gofrs/uuid"
 	pb "productinfo/server/ecommerce"
+
+	"github.com/gofrs/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -23,12 +24,13 @@ const (
 
 // server is used to implement ecommerce/product_info.
 type server struct {
+	pb.UnimplementedProductInfoServer
 	productMap map[string]*pb.Product
 }
 
 // AddProduct implements ecommerce.AddProduct
 func (s *server) AddProduct(ctx context.Context,
-							in *pb.Product) (*pb.ProductID, error) {
+	in *pb.Product) (*pb.ProductID, error) {
 	out, err := uuid.NewV4()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Error while generating Product ID", err)
@@ -59,7 +61,9 @@ func main() {
 	}
 	s := grpc.NewServer()
 	pb.RegisterProductInfoServer(s, &server{})
+	log.Println("starting grpc server on", port)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+	log.Println("stopped grpc server")
 }
